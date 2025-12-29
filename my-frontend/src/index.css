@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+body {
+  font-family: "Poppins", sans-serif;
+}
+
+
+h1, h2, h3 {
+  font-family: "Poppins", sans-serif;
+}
+
+p, input, button {
+  font-family: "Inter", sans-serif;
+}
