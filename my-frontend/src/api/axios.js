@@ -1,8 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL: "https://quizz-app-e5k2.onrender.com/api",
   withCredentials: true
 });
 
 export default api;
+
