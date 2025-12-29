@@ -21,10 +21,18 @@ connectDB();
 
 
 
+import cors from "cors";
+
+
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: [
+    "http://localhost:5173",
+     "https://quizz-application111.onrender.com"
+  ],
   credentials: true
-}))
+}));
+
+
 
 
 
