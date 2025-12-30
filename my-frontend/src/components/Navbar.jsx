@@ -9,7 +9,8 @@ export default function Navbar({ user }) {
   }
 
   return (
-    <nav className="bg-gradient-to-r from-gray-900 via-blue-900 to-gray-900 text-white px-6 py-3 flex justify-between items-center shadow-lg">
+  <nav className="bg-gray-900 text-white px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+
       <div className="flex gap-6 items-center">
         <Link to="/" className="font-extrabold text-2xl tracking-wide">
           QuizApp
@@ -54,9 +55,10 @@ export default function Navbar({ user }) {
 
         {user && (
           <>
-            <div className="px-3 py-1 rounded-full bg-white/10 border border-white/20">
-              {user.email} ({user.role})
-            </div>
+           <span className="hidden sm:inline text-gray-300 truncate max-w-[120px]">
+  {user.email} ({user.role})
+</span>
+
 
             <button
               onClick={logout}
