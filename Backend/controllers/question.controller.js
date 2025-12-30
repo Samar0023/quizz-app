@@ -16,20 +16,25 @@ export const getQuestions = async (req, res) => {
         const allowedDifficulties = ["easy", "medium", "hard"]
 
         if (!allowedDifficulties.includes(difficulty.toLowerCase())) {
-            res.status(400).json({
+          return  res.status(400).json({
                 success: false,
                 message: "correct difficulty is required",
             })
         }
-        const parsedLimit = Number(limit) || 10;
+        const parsedLimit = Number(limit) || 30;
 
         const doShuffle = shuffle === "true" || shuffle === true;
 
     const subjectNormalized = subject.trim().toLowerCase();
 
-        let questions = await questionSchema
-            .find({ subject: subjectNormalized, difficulty: difficulty.toLowerCase() })
-            .limit(parsedLimit);
+let questions = await questionSchema.find({
+  subject: { $regex: `^${subjectNormalized}$`, $options: "i" },
+  difficulty: { $regex: `^${difficulty}$`, $options: "i" }
+});
+
+
+console.log("BACKEND RETURNING:", questions.length);
+           
 
 
         if (doShuffle) {
@@ -97,7 +102,7 @@ export const createQuestions = async (req, res) => {
         if (!quizzexist) {
             return res.status(404).json({
                 success: false,
-                message: " Partiucular Quizz Not Available"
+                message: "Particular Quiz Not Available"
             })
         }
 
