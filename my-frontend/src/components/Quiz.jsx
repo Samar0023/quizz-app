@@ -12,15 +12,15 @@ export default function Quiz() {
   );
 
   const LIMITS = {
-    easy: 10,
+    easy: 20,
     medium: 15,
-    hard: 20
+    hard: 10
   };
 
   const TIMERS = {
     easy: 10 * 60,
-    medium: 7 * 60,
-    hard: 5 * 60
+    medium: 15 * 60,
+    hard: 15 * 60
   };
 
   const [questions, setQuestions] = useState([]);
