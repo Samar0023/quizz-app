@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   return (
@@ -86,23 +87,29 @@ export default function Home() {
           </p>
 
           <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <motion.a
-              href="/login"
+            <motion.div
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.96 }}
-              className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 px-8 py-4 font-semibold text-white shadow-lg transition-all"
             >
-              Login →
-            </motion.a>
+              <Link
+                to="/login"
+                className="inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 px-8 py-4 font-semibold text-white shadow-lg"
+              >
+                Login →
+              </Link>
+            </motion.div>
 
-            <motion.a
-              href="/signup"
+            <motion.div
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.96 }}
-              className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-8 py-4 font-semibold text-white transition-all hover:bg-white/10"
             >
-              Sign Up
-            </motion.a>
+              <Link
+                to="/signup"
+                className="inline-flex w-full items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-8 py-4 font-semibold text-white transition-all hover:bg-white/10"
+              >
+                Sign Up
+              </Link>
+            </motion.div>
           </div>
 
           <div className="mt-10 text-center text-sm text-slate-400">
