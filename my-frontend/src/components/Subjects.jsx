@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import api from "../api/axios";
 
 export default function Subjects() {
@@ -8,6 +9,7 @@ export default function Subjects() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,14 +26,16 @@ export default function Subjects() {
         setLoading(false);
       }
     }
+
     load();
   }, []);
 
   useEffect(() => {
     const s = search.toLowerCase();
+
     setFiltered(
       quizzes.filter(
-        q =>
+        (q) =>
           q.title.toLowerCase().includes(s) ||
           q.subject.toLowerCase().includes(s)
       )
@@ -40,52 +44,144 @@ export default function Subjects() {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 text-gray-700 text-lg">
-        Loading…
+      <div className="min-h-screen flex items-center justify-center bg-[#050816]">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          className="w-14 h-14 rounded-full border-4 border-indigo-500 border-t-transparent"
+        />
       </div>
     );
 
   if (error)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-red-50 text-red-600 text-lg">
+      <div className="min-h-screen flex items-center justify-center bg-[#050816] text-red-400 text-xl">
         {error}
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 py-10 px-4">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-8">Select a Quiz</h1>
+    <div className="min-h-screen bg-[#050816] text-white overflow-hidden">
 
-        <div className="max-w-md mx-auto mb-8">
+      <div className="absolute top-0 left-0 w-72 h-72 bg-indigo-600/20 blur-[120px] rounded-full"></div>
+      <div className="absolute bottom-0 right-0 w-80 h-80 bg-cyan-500/20 blur-[120px] rounded-full"></div>
+
+      <div className="relative max-w-7xl mx-auto px-6 py-14">
+
+        <motion.div
+          initial={{ opacity: 0, y: -35 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h1 className="text-5xl font-black text-center">
+            Choose Your Quiz
+          </h1>
+
+          <p className="text-gray-400 mt-3 text-center">
+            Test your knowledge across multiple subjects.
+          </p>
+        </motion.div>
+
+       
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: .2 }}
+          className="max-w-xl mx-auto mt-10"
+        >
           <input
-            className="w-full border px-4 py-2 rounded-lg shadow bg-white"
-            placeholder="Search quizzes or subjects…"
+            type="text"
+            placeholder="Search quizzes..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-2xl border border-white/10
+            bg-white/5 backdrop-blur-xl px-6 py-4
+            text-white placeholder:text-gray-500
+            focus:outline-none focus:ring-2
+            focus:ring-indigo-500 transition"
           />
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map(q => (
-            <div
+     
+
+        <motion.div
+          layout
+          className="grid md:grid-cols-2 xl:grid-cols-3 gap-8 mt-14"
+        >
+          {filtered.map((q, index) => (
+            <motion.div
               key={q._id}
-              onClick={() => navigate(`/quiz/${q.subject}?difficulty=easy`)}
-              className="bg-white/90 backdrop-blur border rounded-2xl p-6 shadow hover:shadow-xl hover:-translate-y-1 transition cursor-pointer"
+              layout
+              initial={{ opacity: 0, y: 45 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: index * .08,
+              }}
+              whileHover={{
+                y: -8,
+                scale: 1.03,
+              }}
+              whileTap={{
+                scale: .97,
+              }}
+              onClick={() =>
+                navigate(`/quiz/${q.subject}?difficulty=easy`)
+              }
+              className="
+              group cursor-pointer
+              rounded-3xl
+              border border-white/10
+              bg-white/5
+              backdrop-blur-2xl
+              p-7
+              transition
+              hover:border-indigo-500/60
+              hover:shadow-[0_0_45px_rgba(99,102,241,.25)]
+              "
             >
-              <h2 className="text-xl font-semibold">{q.title}</h2>
-              <p className="text-gray-600 mt-2">{q.description}</p>
-              <div className="mt-4 inline-block px-4 py-1 rounded-full bg-blue-100 text-blue-700 text-sm capitalize">
-                {q.subject}
+              <div className="flex justify-between items-center">
+
+                <span className="px-4 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-sm capitalize">
+                  {q.subject}
+                </span>
+
+                <span className="text-indigo-400 text-xl group-hover:translate-x-1 transition">
+                  →
+                </span>
+
               </div>
-            </div>
+
+              <h2 className="text-2xl font-bold mt-7">
+                {q.title}
+              </h2>
+
+              <p className="text-gray-400 mt-4 leading-7">
+                {q.description}
+              </p>
+
+              <div className="mt-8 flex justify-between items-center">
+
+                <span className="text-sm text-gray-500">
+                  Difficulty
+                </span>
+
+                <span className="text-green-400 font-semibold">
+                  Easy
+                </span>
+
+              </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {!filtered.length && (
-          <p className="text-center text-gray-600 mt-6">
-            No quizzes match your search.
-          </p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center mt-20 text-gray-500 text-lg"
+          >
+            No quizzes found.
+          </motion.div>
         )}
       </div>
     </div>

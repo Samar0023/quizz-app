@@ -1,12 +1,14 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import api from "../api/axios";
 
 export default function Result() {
   const { state } = useLocation();
+  const navigate = useNavigate();
+
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!state) {
@@ -14,80 +16,189 @@ export default function Result() {
       return;
     }
 
-    console.log("SUBMIT PAYLOAD:", state);
-
-    api.post("/results/submitresult", {
-      quizId: state.quizId,
-      answers: state.answers,
-    })
+    api
+      .post("/results/submitresult", {
+        quizId: state.quizId,
+        answers: state.answers,
+      })
       .then((res) => setData(res.data))
-      .catch((err) => {
-        console.log(err.response?.data);
+      .catch(() => {
         setError("Failed to submit quiz");
       });
   }, []);
 
   if (error)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-red-50 text-red-700 text-lg">
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-red-400 text-xl">
         {error}
       </div>
     );
 
   if (!data)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-blue-50 text-gray-700">
-        Submitting your quiz…
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-slate-950 to-slate-900 text-white">
+        <motion.div
+          animate={{
+            rotate: 360,
+          }}
+          transition={{
+            duration: 1,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="w-14 h-14 rounded-full border-4 border-cyan-500 border-t-transparent"
+        />
       </div>
     );
 
   const pass = data.percentage >= 40;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 flex justify-center items-center px-4">
-      <div className="max-w-xl w-full bg-white/90 backdrop-blur shadow-xl rounded-2xl p-8 text-center">
+    <div className="min-h-screen bg-gradient-to-br from-black via-slate-950 to-slate-900 flex items-center justify-center px-6">
 
-        <h1 className="text-3xl font-bold mb-2">Your Result</h1>
-        <p className="text-gray-500 mb-6">
-          Thanks for completing the quiz 🎉
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: 40,
+          scale: 0.95,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+          scale: 1,
+        }}
+        transition={{
+          duration: 0.5,
+        }}
+        className="w-full max-w-xl rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-10"
+      >
+        <motion.h1
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="text-4xl font-black text-center text-white"
+        >
+          Quiz Completed 🎉
+        </motion.h1>
+
+        <p className="text-center text-slate-400 mt-3">
+          Here is your performance summary.
         </p>
 
-
-        <div className="flex justify-center mb-6">
+        <motion.div
+          initial={{
+            scale: 0,
+          }}
+          animate={{
+            scale: 1,
+          }}
+          transition={{
+            delay: 0.2,
+            type: "spring",
+            stiffness: 120,
+          }}
+          className="flex justify-center mt-10"
+        >
           <div
-            className={`w-36 h-36 rounded-full flex flex-col items-center justify-center text-white text-2xl font-bold shadow
-            ${pass ? "bg-green-500" : "bg-red-500"}`}
+            className={`w-44 h-44 rounded-full flex flex-col items-center justify-center shadow-2xl border-4 ${
+              pass
+                ? "bg-gradient-to-br from-green-500 to-emerald-700 border-green-300"
+                : "bg-gradient-to-br from-red-500 to-red-700 border-red-300"
+            }`}
           >
-            {data.percentage}%
-            <span className="text-sm font-normal mt-1">Score</span>
+            <span className="text-5xl font-black text-white">
+              {data.percentage}%
+            </span>
+
+            <span className="text-white/80 mt-2">
+              Your Score
+            </span>
           </div>
+        </motion.div>
+
+        <div className="grid grid-cols-2 gap-5 mt-10">
+
+          <div className="rounded-2xl bg-slate-900/70 border border-slate-700 p-5 text-center">
+            <p className="text-slate-400 text-sm">
+              Correct Answers
+            </p>
+
+            <h2 className="text-3xl font-bold text-cyan-400 mt-2">
+              {data.score}
+            </h2>
+          </div>
+
+          <div className="rounded-2xl bg-slate-900/70 border border-slate-700 p-5 text-center">
+            <p className="text-slate-400 text-sm">
+              Total Questions
+            </p>
+
+            <h2 className="text-3xl font-bold text-white mt-2">
+              {data.totalQuestions}
+            </h2>
+          </div>
+
         </div>
 
-        <p className="text-lg font-semibold">
-          {data.score} / {data.totalQuestions} correct
-        </p>
+        <motion.div
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+          transition={{
+            delay: 0.4,
+          }}
+          className="mt-8 text-center"
+        >
+          <h2
+            className={`text-2xl font-bold ${
+              pass ? "text-green-400" : "text-red-400"
+            }`}
+          >
+            {pass
+              ? "Congratulations! You Passed 🎊"
+              : "Keep Practicing 💪"}
+          </h2>
 
-        <p className={`mt-2 text-md font-medium ${pass ? "text-green-600" : "text-red-600"}`}>
-          {pass ? "Well done! You passed 👍" : "Keep practicing 💪"}
-        </p>
+          <p className="text-slate-400 mt-3">
+            {pass
+              ? "Excellent work! You're ready for the next challenge."
+              : "Practice a little more and come back stronger."}
+          </p>
+        </motion.div>
 
-       
-        <div className="mt-8 flex flex-col gap-3">
-          <button
+        <div className="flex flex-col gap-4 mt-10">
+
+          <motion.button
+            whileHover={{
+              scale: 1.03,
+            }}
+            whileTap={{
+              scale: 0.97,
+            }}
             onClick={() => navigate("/subjects")}
-            className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
+            className="py-4 rounded-2xl font-semibold text-lg bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-600"
           >
             Take Another Quiz
-          </button>
+          </motion.button>
 
-          <button
+          <motion.button
+            whileHover={{
+              scale: 1.03,
+            }}
+            whileTap={{
+              scale: 0.97,
+            }}
             onClick={() => navigate(-1)}
-            className="w-full py-3 rounded-xl border border-gray-300 hover:bg-gray-100 text-gray-700 transition"
+            className="py-4 rounded-2xl font-semibold text-lg bg-slate-800 border border-slate-700 hover:bg-slate-700"
           >
-            Retake This Quiz
-          </button>
+            Retake Quiz
+          </motion.button>
+
         </div>
-      </div>
+      </motion.div>
+
     </div>
   );
 }

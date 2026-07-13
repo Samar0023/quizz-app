@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import api from "../api/axios";
 
 export default function Quiz() {
@@ -14,13 +15,13 @@ export default function Quiz() {
   const LIMITS = {
     easy: 20,
     medium: 15,
-    hard: 10
+    hard: 10,
   };
 
   const TIMERS = {
     easy: 10 * 60,
     medium: 15 * 60,
-    hard: 15 * 60
+    hard: 15 * 60,
   };
 
   const [questions, setQuestions] = useState([]);
@@ -29,6 +30,29 @@ export default function Quiz() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [timeLeft, setTimeLeft] = useState(TIMERS[difficulty]);
+
+  const cardVariants = {
+    hidden: {
+      opacity: 0,
+      y: 40,
+      scale: 0.96,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.45,
+      },
+    },
+    exit: {
+      opacity: 0,
+      x: -60,
+      transition: {
+        duration: 0.25,
+      },
+    },
+  };
 
   function formatTime(t) {
     const m = Math.floor(t / 60);
@@ -45,8 +69,6 @@ export default function Quiz() {
         const res = await api.get(
           `/questions/getquestions?subject=${subject}&difficulty=${difficulty}&shuffle=true`
         );
-        console.log("FROM API:", res.data.questions);
-
 
         let list = res.data.questions || [];
 
@@ -55,19 +77,18 @@ export default function Quiz() {
           [list[i], list[j]] = [list[j], list[i]];
         }
 
-        console.log("AFTER SHUFFLE:", list);
-
-
-        list = list.slice(0, LIMITS[difficulty]).map(q => ({
-          ...q,
-          shuffled: [...q.options].sort(() => Math.random() - 0.5)
-        }));
+        list = list
+          .slice(0, LIMITS[difficulty])
+          .map((q) => ({
+            ...q,
+            shuffled: [...q.options].sort(() => Math.random() - 0.5),
+          }));
 
         setQuestions(list);
         setAnswers([]);
         setCurrent(0);
         setTimeLeft(TIMERS[difficulty]);
-      } catch (e) {
+      } catch {
         setError("Failed to load questions");
       } finally {
         setLoading(false);
@@ -79,25 +100,37 @@ export default function Quiz() {
 
   useEffect(() => {
     if (!questions.length) return;
+
     const id = setInterval(() => {
-      setTimeLeft(t => {
+      setTimeLeft((t) => {
         if (t <= 1) {
           clearInterval(id);
           submitQuiz();
           return 0;
         }
+
         return t - 1;
       });
     }, 1000);
+
     return () => clearInterval(id);
   }, [questions]);
 
   function selectAnswer(qid, option) {
-    setAnswers(prev => {
+    setAnswers((prev) => {
       const copy = [...prev];
-      const idx = copy.findIndex(a => a.questionId === qid);
-      if (idx >= 0) copy[idx].selected = option;
-      else copy.push({ questionId: qid, selected: option });
+
+      const idx = copy.findIndex((a) => a.questionId === qid);
+
+      if (idx >= 0) {
+        copy[idx].selected = option;
+      } else {
+        copy.push({
+          questionId: qid,
+          selected: option,
+        });
+      }
+
       return copy;
     });
   }
@@ -106,127 +139,280 @@ export default function Quiz() {
     navigate("/result", {
       state: {
         quizId: questions[0]?.quizId || "",
-        answers
-      }
+        answers,
+      },
     });
   }
 
   const currentQuestion = questions[current];
-  const answered = answers.find(a => a.questionId === currentQuestion?._id)?.selected;
+
+  const answered = answers.find(
+    (a) => a.questionId === currentQuestion?._id
+  )?.selected;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 py-8 px-4">
-      <div className="max-w-3xl mx-auto">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-gradient-to-br from-black via-slate-950 to-slate-900 text-white py-10 px-5"
+    >
+      <div className="max-w-4xl mx-auto"> <motion.div
+  initial={{ y: -30, opacity: 0 }}
+  animate={{ y: 0, opacity: 1 }}
+  className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-2xl mb-8"
+>
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 
-        <div className="bg-white/80 backdrop-blur shadow-lg rounded-2xl p-6 mb-6">
-          <h1 className="text-3xl font-bold mb-2 capitalize text-gray-800">
-            {subject} Quiz
-          </h1>
+    <div>
+      <h1 className="text-4xl font-extrabold capitalize tracking-wide">
+        {subject} Quiz
+      </h1>
 
-          <div className="flex gap-3 mb-3">
-            {["easy", "medium", "hard"].map(level => (
-              <button
-                key={level}
-                onClick={() => {
-                  setDifficulty(level);
-                  setSearchParams({ difficulty: level });
-                }}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  difficulty === level
-                    ? "bg-blue-600 text-white shadow"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
-              >
-                {level}
-              </button>
-            ))}
-          </div>
+      <p className="text-slate-400 mt-2">
+        Answer every question before the timer ends.
+      </p>
+    </div>
 
-          <p className="font-semibold text-lg text-red-600 mb-2">
-            Time Left: {formatTime(timeLeft)}
-          </p>
+    <motion.div
+      animate={{
+        scale: timeLeft < 60 ? [1, 1.08, 1] : 1,
+      }}
+      transition={{
+        repeat: Infinity,
+        duration: 1,
+      }}
+      className="px-6 py-4 rounded-2xl bg-red-500/15 border border-red-500/40"
+    >
+      <p className="text-red-400 text-sm uppercase tracking-widest">
+        Time Left
+      </p>
 
-          <div>
-            <div className="flex justify-between text-sm text-gray-600 mb-1">
-              <span>Question {current + 1}</span>
-              <span>{questions.length} Total</span>
-            </div>
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-500 transition-all"
-                style={{ width: `${((current + 1) / questions.length) * 100}%` }}
-              />
-            </div>
-          </div>
-        </div>
+      <h2 className="text-3xl font-bold">
+        {formatTime(timeLeft)}
+      </h2>
+    </motion.div>
 
-        {loading && <p className="text-center text-gray-600">Loading…</p>}
-        {error && <p className="text-center text-red-500">{error}</p>}
-        {!loading && !questions.length && (
-          <p className="text-center text-gray-700">No questions found.</p>
-        )}
+  </div>
 
-        {currentQuestion && (
-          <div className="bg-white/90 backdrop-blur border rounded-xl p-5 shadow-sm hover:shadow-md transition">
-            <p className="font-semibold text-lg text-gray-800 mb-3">
-              {current + 1}. {currentQuestion.questions}
-            </p>
+  <div className="flex flex-wrap gap-3 mt-8">
+    {["easy", "medium", "hard"].map((level) => (
+      <motion.button
+        whileHover={{
+          scale: 1.06,
+        }}
+        whileTap={{
+          scale: 0.96,
+        }}
+        key={level}
+        onClick={() => {
+          setDifficulty(level);
+          setSearchParams({
+            difficulty: level,
+          });
+        }}
+        className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+          difficulty === level
+            ? "bg-blue-600 shadow-lg shadow-blue-500/40"
+            : "bg-slate-800 hover:bg-slate-700"
+        }`}
+      >
+        {level.toUpperCase()}
+      </motion.button>
+    ))}
+  </div>
 
-            <div className="grid gap-2">
-              {currentQuestion.shuffled.map(opt => {
-                const selected = answered === opt;
-                return (
-                  <button
-                    key={opt}
-                    onClick={() => selectAnswer(currentQuestion._id, opt)}
-                    className={`text-left border rounded-lg px-4 py-2 transition ${
-                      selected
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-gray-50 hover:bg-gray-100"
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+  <div className="mt-8">
 
-        {questions.length > 0 && (
-          <div className="flex gap-4 mt-8">
-            <button
-              onClick={() => setCurrent(c => c - 1)}
-              disabled={current === 0}
-              className={`w-1/3 py-3 rounded-xl text-white text-lg font-semibold transition ${
-                current === 0
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-500 hover:bg-blue-600"
+    <div className="flex justify-between text-slate-400 mb-3">
+      <span>
+        Question {current + 1}
+      </span>
+
+      <span>
+        {questions.length} Questions
+      </span>
+    </div>
+
+    <div className="h-3 rounded-full bg-slate-800 overflow-hidden">
+
+      <motion.div
+        animate={{
+          width: `${((current + 1) / questions.length) * 100}%`,
+        }}
+        transition={{
+          duration: 0.4,
+        }}
+        className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500"
+      />
+
+    </div>
+
+  </div>
+</motion.div>
+
+{loading && (
+  <div className="text-center text-slate-400 text-xl py-20">
+    Loading Questions...
+  </div>
+)}
+
+{error && (
+  <div className="text-center text-red-400 text-xl py-20">
+    {error}
+  </div>
+)}
+
+{!loading && !questions.length && (
+  <div className="text-center text-slate-400 text-xl py-20">
+    No Questions Found
+  </div>
+)}
+
+<AnimatePresence mode="wait">
+
+  {currentQuestion && (
+    <motion.div
+      key={current}
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-8"
+    >
+      <h2 className="text-2xl font-bold leading-relaxed mb-8">
+        {current + 1}. {currentQuestion.questions}
+      </h2>
+
+      <div className="space-y-4">
+
+        {currentQuestion.shuffled.map((opt) => {
+
+          const selected = answered === opt;
+
+          return (
+            <motion.button
+              key={opt}
+              whileHover={{
+                scale: 1.02,
+              }}
+              whileTap={{
+                scale: 0.98,
+              }}
+              onClick={() =>
+                selectAnswer(currentQuestion._id, opt)
+              }
+              className={`w-full text-left px-6 py-5 rounded-2xl border transition-all ${
+                selected
+                  ? "bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30"
+                  : "bg-slate-900/70 border-slate-700 hover:border-blue-500 hover:bg-slate-800"
               }`}
             >
-              Previous
-            </button>
+              {opt}
+            </motion.button>
+          );
 
-            {current < questions.length - 1 && (
-              <button
-                onClick={() => setCurrent(c => c + 1)}
-                className="w-2/3 py-3 rounded-xl text-white text-lg font-semibold bg-blue-600 hover:bg-blue-700"
-              >
-                Next
-              </button>
-            )}
+        })}
 
-            {current === questions.length - 1 && (
-              <button
-                onClick={submitQuiz}
-                className="w-2/3 py-3 rounded-xl text-white text-lg font-semibold bg-green-600 hover:bg-green-700"
-              >
-                Submit Quiz
-              </button>
-            )}
-          </div>
-        )}
+      </div>
+    </motion.div>
+  )}
+
+</AnimatePresence>{questions.length > 0 && (
+  <motion.div
+    initial={{ opacity: 0, y: 25 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.2 }}
+    className="flex flex-col sm:flex-row gap-4 mt-8"
+  >
+    <motion.button
+      whileHover={{ scale: current === 0 ? 1 : 1.03 }}
+      whileTap={{ scale: current === 0 ? 1 : 0.97 }}
+      disabled={current === 0}
+      onClick={() => setCurrent((c) => c - 1)}
+      className={`sm:w-1/3 py-4 rounded-2xl font-semibold text-lg transition ${
+        current === 0
+          ? "bg-slate-800 text-slate-500 cursor-not-allowed"
+          : "bg-slate-700 hover:bg-slate-600"
+      }`}
+    >
+      Previous
+    </motion.button>
+
+    {current < questions.length - 1 ? (
+      <motion.button
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
+        onClick={() => setCurrent((c) => c + 1)}
+        className="sm:w-2/3 py-4 rounded-2xl font-semibold text-lg bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-600 hover:shadow-xl hover:shadow-cyan-500/30"
+      >
+        Next Question →
+      </motion.button>
+    ) : (
+      <motion.button
+        whileHover={{
+          scale: 1.03,
+          boxShadow: "0px 0px 25px rgba(34,197,94,.5)",
+        }}
+        whileTap={{ scale: 0.97 }}
+        onClick={submitQuiz}
+        className="sm:w-2/3 py-4 rounded-2xl font-semibold text-lg bg-gradient-to-r from-green-500 to-emerald-600"
+      >
+        Submit Quiz 🚀
+      </motion.button>
+    )}
+  </motion.div>
+)}
+
+{questions.length > 0 && (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ delay: 0.4 }}
+    className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl p-5"
+  >
+    <div className="flex justify-between items-center">
+      <div>
+        <p className="text-slate-400 text-sm">Answered</p>
+        <h3 className="text-2xl font-bold">
+          {answers.length} / {questions.length}
+        </h3>
+      </div>
+
+      <div className="text-right">
+        <p className="text-slate-400 text-sm">Difficulty</p>
+        <h3 className="text-xl font-bold capitalize text-cyan-400">
+          {difficulty}
+        </h3>
       </div>
     </div>
-  );
+
+    <div className="mt-4 grid grid-cols-5 sm:grid-cols-10 gap-2">
+      {questions.map((q, index) => {
+        const done = answers.some((a) => a.questionId === q._id);
+
+        return (
+          <motion.button
+            key={q._id}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setCurrent(index)}
+            className={`h-10 rounded-xl font-semibold transition ${
+              index === current
+                ? "bg-cyan-500 text-white"
+                : done
+                ? "bg-green-600"
+                : "bg-slate-800 hover:bg-slate-700"
+            }`}
+          >
+            {index + 1}
+          </motion.button>
+        );
+      })}
+    </div>
+  </motion.div>
+)}
+
+</div>
+</motion.div>
+);
 }

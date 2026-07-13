@@ -1,87 +1,210 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import api from "../api/axios";
 
 export default function Signup() {
-  const [form,setForm]=useState({username:"",email:"",password:""});
-  const [error,setError]=useState("");
-  const [loading,setLoading]=useState(false);
-  const navigate=useNavigate();
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
 
-  async function submit(e){
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  async function submit(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
-    try{
-      await api.post("/auth/signup",form);
+
+    try {
+      await api.post("/auth/signup", form);
       navigate("/login");
-    }catch(err){
+    } catch (err) {
       setError(err.response?.data?.message || "Signup failed");
-    }finally{
+    } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-700 flex items-center justify-center px-4">
-      <div className="max-w-5xl w-full grid md:grid-cols-2 gap-8 items-center">
-        <div className="text-white space-y-4">
-          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">Create Your Account</h1>
-          <p className="text-lg text-indigo-100">
-            Start your learning journey today. Track results, test yourself, and grow faster with QuizApp.
+    <div className="relative min-h-screen overflow-hidden bg-slate-950 flex items-center justify-center px-6">
+      <motion.div
+        animate={{
+          x: [0, 120, -80, 0],
+          y: [0, -80, 60, 0],
+          scale: [1, 1.15, 0.95, 1],
+        }}
+        transition={{
+          duration: 20,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-indigo-600/20 blur-[130px]"
+      />
+
+      <motion.div
+        animate={{
+          x: [0, -100, 80, 0],
+          y: [0, 100, -60, 0],
+          scale: [1, 0.9, 1.1, 1],
+        }}
+        transition={{
+          duration: 24,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="absolute -right-40 bottom-0 h-[520px] w-[520px] rounded-full bg-cyan-500/20 blur-[140px]"
+      />
+
+      <motion.div
+        animate={{
+          x: [0, 60, -70, 0],
+          y: [0, 40, -50, 0],
+          scale: [1, 1.08, 0.95, 1],
+        }}
+        transition={{
+          duration: 18,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="absolute left-1/2 top-1/3 h-[360px] w-[360px] -translate-x-1/2 rounded-full bg-violet-500/15 blur-[120px]"
+      />
+
+      <div
+        className="absolute inset-0 opacity-[0.05]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
+
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(2,6,23,0.3)_60%,rgb(2,6,23)_100%)]" />
+
+      <motion.div
+        initial={{ opacity: 0, y: 35 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        className="relative z-10 w-full max-w-6xl grid md:grid-cols-2 gap-12 items-center"
+      >
+        <div className="space-y-6 text-white">
+          <div className="inline-flex rounded-full border border-indigo-500/20 bg-indigo-500/10 px-5 py-2 text-sm font-medium text-indigo-300">
+            🚀 Join QuizApp
+          </div>
+
+          <h1 className="text-5xl font-black leading-tight">
+            Build Better
+            <span className="block bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
+              Learning Habits
+            </span>
+          </h1>
+
+          <p className="text-lg leading-8 text-slate-300">
+            Create your account and start solving quizzes across multiple
+            subjects. Track your progress, improve your scores, and become a
+            smarter learner every day.
           </p>
-          <p className="text-sm text-indigo-200">It only takes a minute to get started.</p>
+
+          <div className="flex gap-8 pt-4">
+            <div>
+              <h2 className="text-3xl font-bold">1000+</h2>
+              <p className="text-slate-400">Questions</p>
+            </div>
+
+            <div>
+              <h2 className="text-3xl font-bold">25+</h2>
+              <p className="text-slate-400">Subjects</p>
+            </div>
+
+            <div>
+              <h2 className="text-3xl font-bold">Free</h2>
+              <p className="text-slate-400">Forever</p>
+            </div>
+          </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-center mb-6">Sign up</h2>
+        <motion.div
+          whileHover={{ y: -5 }}
+          className="rounded-[32px] border border-white/10 bg-white/5 p-10 backdrop-blur-3xl shadow-[0_25px_80px_rgba(0,0,0,0.45)]"
+        >
+          <h2 className="mb-8 text-center text-3xl font-bold text-white">
+            Create Account
+          </h2>
 
-          {error && <p className="text-center text-red-600 mb-3">{error}</p>}
+          {error && (
+            <div className="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-center text-red-300">
+              {error}
+            </div>
+          )}
 
-          <form onSubmit={submit} className="space-y-4">
+          <form onSubmit={submit} className="space-y-5">
             <input
               name="username"
-              className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
               placeholder="Username"
-              onChange={e=>setForm({...form,[e.target.name]:e.target.value})}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  [e.target.name]: e.target.value,
+                })
+              }
               required
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white placeholder:text-slate-500 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
             />
 
             <input
               name="email"
               type="email"
-              className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
-              placeholder="Email"
-              onChange={e=>setForm({...form,[e.target.name]:e.target.value})}
+              placeholder="Email Address"
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  [e.target.name]: e.target.value,
+                })
+              }
               required
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white placeholder:text-slate-500 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
             />
 
             <input
               name="password"
               type="password"
-              className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
               placeholder="Password"
-              onChange={e=>setForm({...form,[e.target.name]:e.target.value})}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  [e.target.name]: e.target.value,
+                })
+              }
               required
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white placeholder:text-slate-500 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
             />
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white py-2 rounded text-lg font-semibold transition"
               type="submit"
+              className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 py-4 text-lg font-semibold text-white shadow-lg transition disabled:opacity-60"
             >
-              {loading ? "Creating account..." : "Sign Up"}
-            </button>
+              {loading ? "Creating account..." : "Create Account"}
+            </motion.button>
           </form>
 
-          <p className="text-center text-sm mt-4">
+          <p className="mt-8 text-center text-slate-400">
             Already have an account?{" "}
-            <Link to="/login" className="text-indigo-600 font-semibold">
+            <Link
+              to="/login"
+              className="font-semibold text-indigo-400 transition hover:text-indigo-300"
+            >
               Login
             </Link>
           </p>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
